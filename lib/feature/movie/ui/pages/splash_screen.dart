@@ -54,6 +54,7 @@ class _SplashScreenState extends State<SplashScreen>
             providers: [
               BlocProvider(create: (context) => AppDI.provideMovieBloc()),
               BlocProvider(create: (context) => AppDI.provideFavoriteBloc()),
+              BlocProvider(create: (context) => AppDI.provideMovieSearchBloc()),
             ],
             child: const HomeScreen(),
           ),

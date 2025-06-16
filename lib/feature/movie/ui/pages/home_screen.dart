@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:movieapp/core/constants/theme/app_theme.dart';
+import 'package:movieapp/core/di/di.dart';
+import 'package:movieapp/feature/movie/bloc/favorite_bloc/favorite_bloc.dart';
 import 'package:movieapp/feature/movie/bloc/movie_bloc.dart';
+import 'package:movieapp/feature/movie/repository/entities/movie_entity.dart';
 import 'package:movieapp/feature/movie/repository/movie_repository.dart';
 import 'package:movieapp/feature/movie/bloc/search_bloc/movie_search_bloc.dart';
 import 'package:movieapp/feature/movie/ui/pages/cart.dart';
@@ -44,13 +47,14 @@ class _HomeScreenState extends State<HomeScreen> {
             onPressed: () {
               showModalBottomSheet(
                 context: context,
+                useRootNavigator: true,
                 isScrollControlled: true,
                 shape: const RoundedRectangleBorder(
                   borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
                 ),
                 builder: (context) {
-                  return BlocProvider(
-                    create: (_) => MovieSearchBloc(context.read<MovieRepository>()),
+                  return BlocProvider.value(
+                    value: AppDI.provideMovieSearchBloc(),
                     child: const SearchBottomSheet(),
                   );
                 },
@@ -59,11 +63,14 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           IconButton(
             icon: const Icon(Icons.favorite),
-            onPressed: (){
+            onPressed: () {
               Navigator.push(
-                context, 
-                MaterialPageRoute(builder:(_) => const FavoriteMoviesPage() ),
-                );
+                context,
+                MaterialPageRoute(builder: (_) => BlocProvider.value(
+                  value: context.read<FavoriteBloc>(),
+                  child: const FavoriteMoviesPage(),
+                )),
+              );
             },
           ),
           Switch(
@@ -76,21 +83,57 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: BlocBuilder<MovieBloc, MovieState>(
         builder: (context, state) {
+          List<MovieEntity> movies = [];
+          int currentPage = 1;
+          bool hasReachedMaxPage = false;
+          bool isPaginating = false;
+          String? paginationError;
           if (state is MovieLoading) {
             return const Center(child: CircularProgressIndicator());
-          } else if (state is MovieLoaded || state is MoviePaginationLoading) {
-            final loadedState = state as dynamic;
-            return movieCardCreation(
-              context:context,
-              movies : loadedState.movies,
-              currentPage: loadedState.currentPage,
-              hasReachedMaxPage: loadedState.hasReachedMaxPage,
-              isPaginating : state is MoviePaginationLoading,
-            );
+          } else if (state is MovieLoaded) {
+            movies = state.movies;
+            currentPage = state.currentPage;
+            hasReachedMaxPage = state.hasReachedMaxPage;
+          } else if (state is MoviePaginationLoading) {
+            movies = state.movies;
+            currentPage = state.currentPage;
+            hasReachedMaxPage = state.hasReachedMaxPage;
+            isPaginating = true;
+          } else if (state is MoviePaginationError) {
+            movies = state.movies;
+            currentPage = state.currentPage;
+            hasReachedMaxPage = state.hasReachedMaxPage;
+            paginationError = state.error;
           } else if (state is MovieError) {
-            return Center(child: Text(state.message));
+            return Center(child: Text('Error: ${state.message}'));
           }
-          return const Center(child: Text('Something went wrong'));
+
+          return Column(
+            children: [
+              Expanded(
+                child: movieCardCreation(
+                  context: context,
+                  movies: movies,
+                  currentPage: currentPage,
+                  hasReachedMaxPage: hasReachedMaxPage,
+                  isPaginating: isPaginating,
+                ),
+              ),
+              if (isPaginating)
+                const Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: CircularProgressIndicator(),
+                ),
+              if (paginationError != null)
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    paginationError,
+                    style: const TextStyle(color: Colors.red),
+                  ),
+                ),
+            ],
+          );
         },
       ),
     );

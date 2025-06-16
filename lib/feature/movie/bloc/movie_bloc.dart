@@ -8,7 +8,6 @@ part 'movie_event.dart';
 part 'movie_state.dart';
 
 class MovieBloc extends Bloc<MovieEvent, MovieState> {
-
   final MovieRepository movieRepository;
 
   MovieBloc({required this.movieRepository}) : super(MovieInitial()) {
@@ -16,40 +15,90 @@ class MovieBloc extends Bloc<MovieEvent, MovieState> {
     on<FetchNextPageEvent>(_onFetchNextPage);
   }
 
-  Future <void> _onFetchMovies(FetchMoviesEvent event, Emitter<MovieState> emit) async {
-      developer.log('🚀 [Bloc] FetchMoviesEvent triggered', name: 'Bloc');
+  Future<void> _onFetchMovies(
+    FetchMoviesEvent event,
+    Emitter<MovieState> emit,
+  ) async {
+    developer.log('🚀 [Bloc] FetchMoviesEvent triggered', name: 'Bloc');
 
-      emit(MovieLoading());
-      try {
-        final List<MovieEntity> movies = await movieRepository.getPopularMovies(page : 1);
-        emit(MovieLoaded(movies: movies, currentPage: 1, hasReachedMaxPage: movies.length < 20));
-      } catch (e) {
-        emit(MovieError('Failed to load movies: $e'));
-      }
+    emit(MovieLoading());
+    try {
+      final List<MovieEntity> movies = await movieRepository.getPopularMovies(
+        page: 1,
+      );
+      emit(
+        MovieLoaded(
+          movies: movies,
+          currentPage: 1,
+          hasReachedMaxPage: movies.length < 20,
+        ),
+      );
+    } catch (e) {
+      emit(MovieError('Failed to load movies: $e'));
     }
+  }
 
-    Future<void> _onFetchNextPage(FetchNextPageEvent event, Emitter<MovieState> emit) async {
-      final currentState = state; 
+  Future<void> _onFetchNextPage(
+    FetchNextPageEvent event,
+    Emitter<MovieState> emit,
+  ) async {
+    final currentState = state;
 
-      if(currentState is MovieLoaded && !currentState.hasReachedMaxPage){
-        try{
-          emit(MoviePaginationLoading(movies: currentState.movies, currentPage: currentState.currentPage, hasReachedMaxPage: currentState.hasReachedMaxPage));
-          final nextPage = currentState.currentPage + 1;
-          final List<MovieEntity> movies = await movieRepository.getPopularMovies(page: nextPage);
-          
-          if (movies.isEmpty) {
-            emit(MovieLoaded(movies: currentState.movies, currentPage: currentState.currentPage, hasReachedMaxPage: true));
-          } else {
-            emit(MovieLoaded(
-              movies: List.from(currentState.movies)..addAll(movies),
+    if ((currentState is MovieLoaded || currentState is MoviePaginationError) &&
+        !(currentState is MovieLoaded
+            ? currentState.hasReachedMaxPage
+            : (currentState as MoviePaginationError).hasReachedMaxPage)) {
+      try {
+        final movies = (currentState is MovieLoaded)
+            ? currentState.movies
+            : (currentState as MoviePaginationError).movies;
+        final currentPage = (currentState is MovieLoaded)
+            ? currentState.currentPage
+            : (currentState as MoviePaginationError).currentPage;
+        emit(
+          MoviePaginationLoading(
+            movies: movies,
+            currentPage: currentPage,
+            hasReachedMaxPage: false,
+          ),
+        );
+        final nextPage = currentPage + 1;
+        final List<MovieEntity> newMovies = await movieRepository
+            .getPopularMovies(page: nextPage);
+
+        if (movies.isEmpty) {
+          emit(
+            MovieLoaded(
+              movies: movies,
+              currentPage: currentPage,
+              hasReachedMaxPage: true,
+            ),
+          );
+        } else {
+          emit(
+            MovieLoaded(
+              movies: List.from(movies)..addAll(newMovies),
               currentPage: nextPage,
               hasReachedMaxPage: movies.length < 20,
-            ));
-          }
-        } catch (e) {
-          emit(MovieError('Failed to load more movies: $e'));
+            ),
+          );
         }
+      } catch (e) {
+        emit(
+          MoviePaginationError(
+            movies: (currentState is MovieLoaded)
+                ? currentState.movies
+                : (currentState as MoviePaginationError).movies,
+            currentPage: (currentState is MovieLoaded)
+                ? currentState.currentPage
+                : (currentState as MoviePaginationError).currentPage,
+            hasReachedMaxPage: (currentState is MovieLoaded)
+                ? currentState.hasReachedMaxPage
+                : (currentState as MoviePaginationError).hasReachedMaxPage,
+            error: 'Failed to load next page: $e',
+          ),
+        );
       }
     }
+  }
 }
-

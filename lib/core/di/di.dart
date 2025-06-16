@@ -1,4 +1,5 @@
 import 'package:movieapp/core/api/api_service.dart';
+import 'package:movieapp/feature/movie/bloc/search_bloc/movie_search_bloc.dart';
 import 'package:movieapp/feature/movie/repository/entities/movie_entity.dart';
 import 'package:movieapp/feature/movie/repository/movie_repository.dart';
 import 'package:movieapp/feature/movie/repository/mappers/movie_mapper.dart';
@@ -13,14 +14,13 @@ class AppDI {
   static late FavoriteRepository _favoriteRepository;
   static late MovieBloc _movieBloc;
   static late FavoriteBloc _favoriteBloc;
+  static late MovieSearchBloc _movieSearchBloc; 
 
   static Future<void> init() async {
-    // Initialize Hive
     await Hive.initFlutter();
     Hive.registerAdapter(MovieEntityAdapter());
     await Hive.openBox<MovieEntity>('favoriteMovies');
 
-    // Initialize dependencies once
     _apiService = ApiService();
     _movieMapper = MovieMapper();
     _movieRepository = MovieRepository(apiService: _apiService, movieMapper: _movieMapper);
@@ -29,13 +29,11 @@ class AppDI {
 
     _movieBloc = MovieBloc(movieRepository: _movieRepository);
     _favoriteBloc = FavoriteBloc(_favoriteRepository)..add(LoadFavoritesEvent());
+    _movieSearchBloc = MovieSearchBloc(_movieRepository);
   }
 
-  // Expose dependencies
-
   static MovieRepository provideMovieRepository() => _movieRepository;
-
   static MovieBloc provideMovieBloc() => _movieBloc;
-
   static FavoriteBloc provideFavoriteBloc() => _favoriteBloc;
+  static MovieSearchBloc provideMovieSearchBloc() => _movieSearchBloc;
 }

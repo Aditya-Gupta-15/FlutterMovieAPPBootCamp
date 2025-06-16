@@ -36,3 +36,17 @@ class MovieError extends MovieState {
 
   MovieError(this.message);
 }
+
+class MoviePaginationError extends MovieState {
+  final List<MovieEntity> movies;
+  final int currentPage;
+  final bool hasReachedMaxPage;
+  final String error;
+
+  MoviePaginationError({
+    required this.movies,
+    required this.currentPage,
+    required this.hasReachedMaxPage,
+    required this.error,
+  });
+}
