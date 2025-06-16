@@ -3,7 +3,7 @@ import 'package:movieapp/feature/movie/bloc/search_bloc/movie_search_bloc.dart';
 import 'package:movieapp/feature/movie/repository/entities/movie_entity.dart';
 import 'package:movieapp/feature/movie/repository/movie_repository.dart';
 import 'package:movieapp/feature/movie/repository/mappers/movie_mapper.dart';
-import 'package:movieapp/feature/movie/bloc/movie_bloc.dart';
+import 'package:movieapp/feature/movie/bloc/movie_bloc/movie_bloc.dart';
 import 'package:movieapp/feature/movie/bloc/favorite_bloc/favorite_bloc.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 

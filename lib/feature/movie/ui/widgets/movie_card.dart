@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:movieapp/feature/movie/bloc/favorite_bloc/favorite_bloc.dart';
-import 'package:movieapp/feature/movie/bloc/movie_bloc.dart';
+import 'package:movieapp/feature/movie/bloc/movie_bloc/movie_bloc.dart';
 import 'package:movieapp/feature/movie/ui/pages/full_card_screen.dart';
 
 Widget movieCardCreation({
