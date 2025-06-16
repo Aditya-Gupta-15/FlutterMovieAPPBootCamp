@@ -78,11 +78,15 @@ class _HomeScreenState extends State<HomeScreen> {
         builder: (context, state) {
           if (state is MovieLoading) {
             return const Center(child: CircularProgressIndicator());
-          } else if (state is MovieLoaded) {
-            if (state.movies.isEmpty) {
-              return const Center(child: Text('No movies found'));
-            }
-            return movieCardCreation(state.movies);
+          } else if (state is MovieLoaded || state is MoviePaginationLoading) {
+            final loadedState = state as dynamic;
+            return movieCardCreation(
+              context:context,
+              movies : loadedState.movies,
+              currentPage: loadedState.currentPage,
+              hasReachedMaxPage: loadedState.hasReachedMaxPage,
+              isPaginating : state is MoviePaginationLoading,
+            );
           } else if (state is MovieError) {
             return Center(child: Text(state.message));
           }

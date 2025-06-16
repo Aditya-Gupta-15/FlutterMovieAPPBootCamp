@@ -1,5 +1,6 @@
 import 'dart:developer' as developer;
 import 'package:dio/dio.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:movieapp/core/api/network_models/movie_model.dart';
 import 'package:movieapp/core/constants/api_constants.dart';
@@ -40,11 +41,11 @@ class ApiService {
     );
   }
 
-  Future<List<MovieNetworkModel>> getPopularMovies() async{
+  Future<List<MovieNetworkModel>> getPopularMovies({required int page}) async{
     try {
       final response = await _dio.get('/movie/popular', queryParameters: {
         'language': 'en-US',
-        'page': 1,
+        'page': page,
       });
 
       if (response.statusCode == 200) {

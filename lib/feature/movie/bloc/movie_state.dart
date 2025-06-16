@@ -9,8 +9,26 @@ class MovieLoading extends MovieState {}
 
 class MovieLoaded extends MovieState {
   final List<MovieEntity> movies;
+  final int currentPage;
+  final bool hasReachedMaxPage;
 
-  MovieLoaded(this.movies);
+  MovieLoaded({
+    required this.movies,
+    required this.currentPage,
+    required this.hasReachedMaxPage,
+  });
+}
+
+class MoviePaginationLoading extends MovieState {
+  final List<MovieEntity> movies;
+  final int currentPage;
+  final bool hasReachedMaxPage; // Default to false for pagination loading
+
+  MoviePaginationLoading({
+    required this.movies,
+    required this.currentPage,
+    required this.hasReachedMaxPage,
+  });
 }
 
 class MovieError extends MovieState {

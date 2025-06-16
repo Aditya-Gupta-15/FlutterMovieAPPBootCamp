@@ -19,7 +19,13 @@ class FavoriteMoviesPage extends StatelessWidget {
             if (favoriteMovies.isEmpty) {
               return const Center(child: Text('No favorite movies yet.'));
             }
-            return movieCardCreation(state.favoriteMovies);
+            return movieCardCreation(
+              context: context,
+              movies: favoriteMovies,
+              currentPage: 1, // Not used in this context
+              hasReachedMaxPage: true, // Not used in this context
+              isPaginating: false, // Not used in this context
+            );
           } else if (state is FavoriteError) {
             return Center(child: Text('Error: ${state.message}'));
           }

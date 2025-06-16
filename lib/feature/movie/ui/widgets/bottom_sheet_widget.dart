@@ -64,7 +64,13 @@ class _SearchBottomSheetState extends State<SearchBottomSheet> {
                     if (state.movies.isEmpty) {
                       return const Center(child: Text('No results found.'));
                     }
-                    return movieCardCreation(state.movies);
+                    return movieCardCreation(
+                      context: context,
+                      movies: state.movies,
+                      currentPage: 1,
+                      hasReachedMaxPage: true,
+                      isPaginating: false,
+                    );
                   } else if (state is MovieSearchError) {
                     return Center(child: Text('Error: ${state.message}'));
                   }

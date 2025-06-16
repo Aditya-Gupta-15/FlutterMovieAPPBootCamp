@@ -1,18 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:movieapp/feature/movie/bloc/favorite_bloc/favorite_bloc.dart';
+import 'package:movieapp/feature/movie/bloc/movie_bloc.dart';
 import 'package:movieapp/feature/movie/ui/pages/full_card_screen.dart';
 
-Widget movieCardCreation(movies) {
+Widget movieCardCreation({
+  required BuildContext context,
+  required List movies,
+  required int currentPage,
+  required bool hasReachedMaxPage,
+  required bool isPaginating
+}) {
   return LayoutBuilder(
     builder: (context, constraints) {
       int crossAxisCount = constraints.maxWidth > 600 ? 3 : 2;
       return BlocBuilder<FavoriteBloc, FavoriteState>(
-        builder: (context, state) {
+        builder: (context, favState) {
           List favoriteIds = [];
 
-          if (state is FavoriteLoaded) {
-            favoriteIds = state.favoriteMovies
+          if (favState is FavoriteLoaded) {
+            favoriteIds = favState.favoriteMovies
                 .map((movie) => movie.id)
                 .toList();
           }
@@ -26,6 +33,11 @@ Widget movieCardCreation(movies) {
             ),
             itemCount: movies.length,
             itemBuilder: (context, index) {
+              
+              if(index >= movies.length - 4 && !isPaginating && !hasReachedMaxPage){
+                context.read<MovieBloc>().add(FetchNextPageEvent(nextPage: currentPage + 1));
+              }
+              
               return movieCardDataCreation(
                 context: context,
                 movie: movies[index],

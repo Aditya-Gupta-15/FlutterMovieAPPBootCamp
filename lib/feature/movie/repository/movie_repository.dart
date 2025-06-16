@@ -13,10 +13,10 @@ class MovieRepository {
     required this.movieMapper,
   });
 
-  Future<List<MovieEntity>> getPopularMovies() async {
+  Future<List<MovieEntity>> getPopularMovies({required int page}) async {
     try {
       // Call ApiService -> returns list of MovieNetworkModel
-      final List<MovieNetworkModel> jsonResponse = await apiService.getPopularMovies();
+      final List<MovieNetworkModel> jsonResponse = await apiService.getPopularMovies(page : page);
 
       // Map each MovieNetworkModel to MovieEntity using the mapper
       final List<MovieEntity> movies = jsonResponse
