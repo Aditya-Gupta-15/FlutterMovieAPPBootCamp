@@ -60,10 +60,15 @@ Widget buildFavoriteButton(BuildContext context) {
 }
 
 Widget buildThemeSwitch(BuildContext context) {
-  return Switch(
-    value: themeNotifier.value == AppTheme.dark,
-    onChanged: (value) {
-      themeNotifier.value = value ? AppTheme.dark : AppTheme.light;
+  return ValueListenableBuilder<AppTheme>(
+    valueListenable: themeNotifier,
+    builder: (context, currentTheme, _) {
+      return Switch(
+        value: currentTheme == AppTheme.dark,
+        onChanged: (value) {
+          themeNotifier.value = value ? AppTheme.dark : AppTheme.light;
+        },
+      );
     },
   );
 }
